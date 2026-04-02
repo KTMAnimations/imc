@@ -1,52 +1,19 @@
 # IMC Prosperity 4 Wiki - Comprehensive Reference
 
-*Compiled from the official Prosperity 4 Wiki (https://imc-prosperity.notion.site/prosperity-4-wiki), prosperity.imc.com, IMC corporate pages, Terms & Conditions PDF, community resources, and the Prosperity 4 backtester repository.*
-
----
-
-## Table of Contents
-1. [What is Prosperity 4?](#what-is-prosperity-4)
-2. [Storyline / Lore](#storyline--lore)
-3. [Round Schedule & Timeline](#round-schedule--timeline)
-4. [Game Mechanics Overview](#game-mechanics-overview)
-5. [Algorithmic Trading Challenge](#algorithmic-trading-challenge)
-6. [Manual Trading Challenge](#manual-trading-challenge)
-7. [Trading Products](#trading-products)
-8. [Technical Documentation: Writing an Algorithm in Python](#technical-documentation-writing-an-algorithm-in-python)
-9. [Data Model (datamodel.py)](#data-model-datamodelpy)
-10. [Position Limits](#position-limits)
-11. [Order Execution & Matching](#order-execution--matching)
-12. [Supported Libraries](#supported-libraries)
-13. [Scoring & Leaderboard](#scoring--leaderboard)
-14. [On-Board Advisors & A.R.I.A. Uplinks](#on-board-advisors--aria-uplinks)
-15. [Crew Honors (Badges)](#crew-honors-badges)
-16. [Rules & Code of Conduct](#rules--code-of-conduct)
-17. [Eligibility & Team Formation](#eligibility--team-formation)
-18. [Prizes](#prizes)
-19. [Terms & Conditions (Full)](#terms--conditions-full)
-20. [FAQ](#faq)
-21. [Trading Glossary](#trading-glossary)
-22. [Programming Resources](#programming-resources)
-23. [Community Tools & Resources](#community-tools--resources)
-24. [Tips & Strategy Insights (from previous editions)](#tips--strategy-insights)
-
----
+https://imc-prosperity.notion.site/prosperity-4-wiki
 
 ## What is Prosperity 4?
 
 Prosperity 4 is IMC's global online trading challenge, designed for university students who want to get familiar with algorithmic trading and financial markets. It is a unique simulation game developed by a team of IMC traders, quantitative researchers, and software engineers to provide an accessible, life-like experience of what it takes to be a trader.
 
-This year, Prosperity 4 challenges you to explore new frontiers as you and your crew set course for outer space. Along the way, you'll encounter the most remarkable tradable goods and navigate fascinating foreign markets. It will take skill, knowledge, and courage to overcome the challenges you'll face and turn risk into reward, earning as many **XIRECs** (Prosperity currency) as possible.
+This year, Prosperity 4 challenges you to explore new frontiers as you and your crew set course for outer space, earning as many **XIRECs** (Prosperity currency) as possible.
 
-The challenge runs for **16 days** in total, divided into two active phases of six days each, with a four-day intermission in between. After signing up, you will have time to explore the basic controls and dynamics of the challenge during the tutorial round. This tutorial round will last until April 14, when your first official mission starts.
+The challenge runs for **16 days** in total, divided into two active phases of six days each, with a four-day intermission in between.
 
 Prove your worth on your first mission and you'll be granted access to the second, and final phase of the competition. At the end of the final round, the team that has generated the most profit of all teams will be victorious and be crowned **IMC Trading Talent of 2026**.
 
 **Key facts:**
-- Over 22,600 players across 12,600+ teams in the 2025 edition
-- Representing 500+ universities globally
 - Teams of 1-5 players
-- $50,000 USD total prize pool
 - Python-based algorithmic trading
 - 5 rounds, each with 1 algorithmic challenge + 1 manual challenge
 
@@ -54,17 +21,15 @@ Prove your worth on your first mission and you'll be granted access to the secon
 
 ## Storyline / Lore
 
-Welcome to Prosperity 4!
-
-You are on your way to **Intara**, a distant planet that has reached out for help. You and your crew were sent by the **eXtended Interplanetary Resource Exchange Network (XIREN)** to set up a trading outpost and help the Intarian people turn their planet's raw potential into profitable trading activities.
+You are on your way to **Intara**, a distant planet that has reached out for help.
 
 Before you arrive, you can use the trading simulator from within your spacecraft. Trading options might be limited, but it gives you the opportunity to experiment with some initial tradable goods, run your first lines of Python code, and become familiar with the GUI.
 
-Known for its arid climate, rust-hued terrain, and untapped economic potential, Intara offers interesting resources. However, the Intarian people need your expertise to establish a trading system capable of turning their planet's potential into a prosperous society.
+Intarian people need your expertise to establish a trading system capable of turning their planet's potential into a prosperous society.
 
 Once you've landed on Intara, you'll have only two trading rounds to prove you're capable of building a successful trading post and show the Intarian people how to turn their resources into profitable trading strategies. Trade local goods to establish a viable trading framework, and guide Intara toward a prosperous future.
 
-**If you manage to secure at least 200,000 XIRECs by the end of trading Round 2** (which shouldn't be too hard for talent like you), your mission will be considered a success. Only then will you proceed to the next phase.
+**If you manage to secure at least 200,000 XIRECs by the end of trading Round 2**, your mission will be considered a success. Only then will you proceed to the next phase.
 
 ---
 
@@ -96,12 +61,6 @@ Once you've landed on Intara, you'll have only two trading rounds to prove you'r
 
 ## Game Mechanics Overview
 
-### Dashboard
-The dashboard shows your team name, PnL indicator (generated profit and loss), and overall rank on the leaderboard. Below it are direct links to the Leaderboard and the Crew Honors overview. At the bottom is the Mission Control.
-
-### Outpost View
-The Outpost View provides a clear overview of your outpost and all the structures your team has unlocked by generating XIRECs profit. The more profit you make, the bigger your outpost will grow.
-
 ### Rounds
 The 16 days of simulation of Prosperity are divided into 5 rounds:
 - **Rounds 1 and 2** last **72 hours** each
@@ -113,26 +72,6 @@ At the end of every round, all teams must submit their algorithmic and manual tr
 
 When a new round starts, the results of the previous round will be disclosed and the leaderboard will be updated accordingly.
 
-### Leaderboard
-The Leaderboard shows the ranking of all competing teams in Prosperity 4:
-- **Overall** ranking: total PnL per team
-- **Algorithmic** tab: ranking based on algorithmic trading performance only
-- **Manual** tab: ranking based on manual trading performance only
-- **Country** tab: team ranking compared to other teams in the same country
-
----
-
-## Algorithmic Trading Challenge
-
-Every round contains an algorithmic trading challenge. You will have to submit your (final) Python program before the trading round ends. When the round ends, the last successfully processed submission will be locked in and processed for results.
-
-### How to Submit
-Submitting your algorithm is done through the Mission Control dashboard, by clicking the "Challenge Details" button under the Algorithmic Challenge. Clicking "Upload Algorithm" opens the Upload and Changelog window where you can drag and drop your file or browse for it. You can find all previously uploaded programs with their status and who uploaded them. You can download debug logs.
-
-You and your team can upload as many Python programs as you like, but only the **one active algorithm** will be processed and executed at the end of the round.
-
-### Challenge Details Window
-An Algorithmic Challenge Overview window opens where you can find all the essential information to build your Python program, including the **Data Capsule** containing all the historical trade data for the available tradable goods.
 
 ### The Core Challenge
 For the algorithmic trading challenge, you will be writing and uploading a trading algorithm class in Python, which will then be set loose on Prosperity's exchange. On this exchange, the algorithm will trade against a number of bots, with the aim of earning as many XIRECs (the currency in Prosperity 4) as possible.
@@ -147,18 +86,6 @@ At the beginning of each round, it is disclosed which products will be available
 
 ### For Round 2 specifically
 The Trader class should also define a `bid()` method. It is fine to have a `bid()` method in every submission for every round; it will be ignored for all rounds except Round 2.
-
----
-
-## Manual Trading Challenge
-
-Every round also contains a manual trading challenge taking place at the same time. Similar to the algorithmic trading rounds, the last submission will be locked in and processed for results when the round ends.
-
-**Key points:**
-- During the tutorial round, manual trading is **inactive**
-- Manual trades have **no effect on your algorithmic trade** and can be seen as separate challenges to gain additional profits
-- Manual challenges are mathematical optimization problems / puzzles requiring problem-solving
-- Examples from past editions include auctions and investment scenarios
 
 ---
 
@@ -540,172 +467,6 @@ Importing other external libraries is NOT supported.
 
 ---
 
-## On-Board Advisors & A.R.I.A. Uplinks
-
-### On-Board Advisors
-- You can choose 1 out of 3 available Advisors during the Tutorial Round
-- You may switch Advisors during the Tutorial Round
-- As soon as the Tutorial Round ends, your selection is **locked in**
-- If none selected, one will be assigned automatically
-- Each advisor has a unique personality but provides the same information in different communication styles
-- Located in the bottom right corner of your Outpost View
-- From Round 1 onwards, they provide perspectives and guidance on challenges
-
-### A.R.I.A. Uplinks
-- A.R.I.A. = **Autonomous Relay Interface Assistant**
-- Your main source of information for Prosperity
-- A new Uplink is available at the beginning of every round
-- Contains essential information for Algorithmic and Manual trading activities
-
----
-
-## Crew Honors (Badges)
-
-While you play Prosperity, you can earn badges for all sorts of actions and achievements. All collected badges can be viewed on the Crew Honors page (accessible through the Outpost View or main menu). Badges can be shared via share buttons in the description.
-
----
-
-## Rules & Code of Conduct
-
-### Game Participation Rules
-- Signup process includes creating or joining a team
-- Team captains can send invitations; in Team Settings, you can review pending invitations
-- As soon as Round 1 begins on April 14 at 12:00 CEST, you can no longer sign up
-- Team captains can add/remove members through end of Round 2; after that, team composition is locked
-- Keep in mind eligibility requirements when forming teams
-
-### Code of Conduct on Discord
-- Be respectful
-- Be considerate of different experience levels
-- Avoid off-topic conversations
-- Repeated violations trigger warnings, temporary mutes, or bans
-- Failure to adhere may result in disqualification
-
----
-
-## Eligibility & Team Formation
-
-### Who Can Participate
-Prosperity is primarily designed for university students, but the platform is open to anyone for learning purposes. Eligibility for leaderboard ranking, prizes, and recognition is subject to conditions.
-
-### Team Composition
-- Teams can have 1-5 members (solo play allowed)
-- Team changes allowed through Round 2; after Round 2, formation is locked
-- Teams from different universities are allowed
-- Multinational teams are allowed (team captain selects one country for leaderboard filtering)
-- Team captains name the team, add/remove members, and select the on-board advisor
-- Everyone on the team has equal access to challenges
-
-### General Eligibility (Top 25 Teams)
-- **University enrollment** proof required at time of registration (18+ years)
-- **Ineligible affiliations:**
-  - Currently employed by IMC or any IMC affiliate
-  - Accepted offer of employment with IMC or affiliate
-  - Employed by competitors (market making, HFT, prop trading, quant trading, investment bank trading desks, hedge funds, asset managers)
-  - Affiliated with organizations that contributed to Prosperity's development
-- **Prior Top 10:** Teams including anyone who placed Top 10 in previous editions will be removed from rankings
-
-### Additional Requirements (Top 5 + Manual Winner)
-- Must be available for verification call with IMC
-- Must be resident in EMEA, North America, South America, India, Australia, or Hong Kong
-
-### Prize Distribution in Teams
-Prizes split equally among eligible team members meeting residency requirements.
-
-### Grounds for Disqualification
-- Ineligible affiliations (see above)
-- Multiple team participation
-- False documentation or fake information
-- Exploitation of platform bugs or vulnerabilities
-- Plagiarism of code or algorithms
-- Conduct violating laws or harming IMC's reputation
-
----
-
-## Prizes
-
-| Place | Prize |
-|-------|-------|
-| 1st (Overall Best Score) | USD 25,000 |
-| 2nd | USD 10,000 |
-| 3rd | USD 5,000 |
-| 4th | USD 3,500 |
-| 5th | USD 1,500 |
-| Best Manual Trader | USD 5,000 |
-| **Total** | **USD 50,000** |
-
-- Winners announced within 2 weeks after competition ends
-- Prizes paid within 3 months by bank transfer
-- Participants responsible for declaring prizes and paying applicable taxes
-- Winners must respond with eligibility confirmation and payment info within **3 days** of notification (Claim Period)
-- Failure to respond = forfeiture; prize may go to next eligible team
-- Bank account must be in the name of the natural person receiving the prize
-
----
-
-## Terms & Conditions (Full)
-
-*Last updated: March 16, 2026*
-
-**Conducted by:** IMC Trading B.V. (EMEA), IMC Chicago LLC (Americas), IMC Pacific Pty Ltd (Australia), IMC HK Services Ltd (Hong Kong), IMC India Securities Private Limited (India)
-
-**Competition period:** 12:00 CEST April 14 - 12:00 CEST April 30, 2026
-
-**Registration:** Free. Opens March 16, 2026. Deadline: 11:59 CEST April 14, 2026. One entry per person.
-
-**Eligibility:** Requirements apply at team level. If any member fails, entire team may be disqualified.
-
-**Winner determination:** Final simulated account balance. Tiebreaker by earliest final submission timestamp. No chance/random selection.
-
-**Sanctions:** IMC will not award prizes where doing so would violate economic sanctions or export control laws.
-
-**Privacy:** Personal data processed per applicable data protection laws and the Prosperity Privacy and Cookie Statement.
-
-**Contact:** prosperity@imc.com
-
----
-
-## FAQ
-
-### Getting Started
-- **Signup deadline:** Before Round 1 begins at 12:00 CEST on April 14, 2026
-- **Tutorial Round:** Available immediately after signup until Round 1. Practice algorithmic trading, learn the platform, select On-Board Advisor.
-- **How to write a trading program:** See the "Writing an Algorithm in Python" wiki page
-- **Connect with players:** Join the Prosperity Discord server
-
-### Team Management
-- **Can I change teams?** Yes, through end of Round 2. After that, locked.
-- **Can I rename my team?** Yes, the team captain can.
-- **Team captain responsibilities:** Name team, add/remove members, select advisor. Everyone has equal challenge access.
-- **Multinational teams?** Yes. Captain selects one country for leaderboard filtering.
-- **Different universities?** Absolutely allowed.
-- **University not listed?** Select "Other" - won't impact participation.
-
-### On-Board Advisor
-- Team captain selects before Round 1. Can change during Tutorial Round, locked at Round 1.
-- 3 advisors with unique personalities but same information.
-- If none selected, one assigned automatically.
-
-### Challenges & Scoring
-- **Do manual challenges affect algorithmic PnL?** No, they are independent.
-- **Score calculation time:** Roughly 3 hours between rounds.
-- **Submitted file not "active"?** If not marked active, it wasn't submitted in time. Previous active file counts.
-
-### Badges
-- Some for fun, others reward top performance
-- Can be shared on Discord or LinkedIn
-- Check under Crew Honours in menu
-
-### Eligibility
-- Platform open to anyone for learning
-- Prize eligibility limited to specific regions
-- If any team member fails eligibility, entire team may be disqualified
-- Employment at competitor firm is disqualifying only if employment has commenced
-
----
-
-## Trading Glossary
-
 ### Exchange
 A central marketplace where buyers and sellers arrange trades in products (commodities, stocks, bonds, ETFs, derivatives, currencies, cryptocurrencies). Modern exchanges use digital infrastructure for automated matching.
 
@@ -742,14 +503,7 @@ A trading strategy of simultaneously buying and selling products to capture the 
 ## Programming Resources
 
 ### Tools Needed
-- Install **Python 3.12** (from python.org/downloads)
-- Use a text editor/IDE with Python syntax highlighting (recommended: **VS Code**)
-- Don't always pick the newest Python version if very recent
-
-### Online Learning
-- **Real Python** - Object-Oriented Programming in Python 3 tutorial
-- **IMC Trading** - Python for Beginners video series
-
+- Install **Python 3.12**
 ---
 
 ## Community Tools & Resources
