@@ -3,7 +3,7 @@ IMC Prosperity 4 — Tutorial Round Strategy (v2 — platform-corrected)
 =====================================================================
 Products: EMERALDS (stationary @ 10,000) and TOMATOES (random walk with drift)
 
-Key insight: On the real platform, passive orders at the same price as
+Key fix from v1: On the real platform, passive orders at the same price as
 existing bot orders never fill (bots have time priority). We must quote
 INSIDE the existing spread to get price priority.
 
@@ -69,6 +69,7 @@ class Trader:
         best_ask = min(od.sell_orders.keys()) if od.sell_orders else None
 
         # Phase 1: Take any order priced better than fair
+        # Buy any sell order below fair value
         if od.sell_orders:
             for ask_price in sorted(od.sell_orders.keys()):
                 if ask_price >= fair:
@@ -81,6 +82,7 @@ class Trader:
                 orders.append(Order(product, ask_price, qty))
                 pos += qty
 
+        # Sell into any buy order above fair value
         if od.buy_orders:
             for bid_price in sorted(od.buy_orders.keys(), reverse=True):
                 if bid_price <= fair:
@@ -94,12 +96,15 @@ class Trader:
                 pos -= qty
 
         # Phase 2: Post passive quotes INSIDE the existing spread
+        # Must be strictly better than existing L1 to get price priority
         if best_bid is not None and best_ask is not None:
-            our_bid = best_bid + 1
-            our_ask = best_ask - 1
+            # Post 1 tick inside the existing best bid/ask
+            our_bid = best_bid + 1   # e.g., 9993 if best_bid=9992
+            our_ask = best_ask - 1   # e.g., 10007 if best_ask=10008
 
-            our_bid = min(our_bid, fair - 1)
-            our_ask = max(our_ask, fair + 1)
+            # Never cross or touch fair value (ensures we profit per fill)
+            our_bid = min(our_bid, fair - 1)  # max 9999
+            our_ask = max(our_ask, fair + 1)  # min 10001
 
             buy_room = limit - pos
             sell_room = limit + pos
@@ -147,6 +152,7 @@ class Trader:
         fair = ema
 
         # Phase 1: Take mispriced orders
+        # Buy any sell order below our fair value
         for ask_price in sorted(od.sell_orders.keys()):
             if ask_price >= fair:
                 break
@@ -158,6 +164,7 @@ class Trader:
             orders.append(Order(product, ask_price, qty))
             pos += qty
 
+        # Sell into any buy order above our fair value
         for bid_price in sorted(od.buy_orders.keys(), reverse=True):
             if bid_price <= fair:
                 break
@@ -170,10 +177,12 @@ class Trader:
             pos -= qty
 
         # Phase 2: Post passive quotes INSIDE the existing spread
+        # 1 tick better than existing best bid/ask for price priority
         our_bid = best_bid + 1
         our_ask = best_ask - 1
         fair_int = int(round(fair))
 
+        # Don't cross our estimated fair value
         our_bid = min(our_bid, fair_int - 1)
         our_ask = max(our_ask, fair_int + 1)
 
