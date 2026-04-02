@@ -1,18 +1,17 @@
 """
-IMC Prosperity 4 — Tutorial Round Strategy (v3)
-=================================================
+IMC Prosperity 4 — Tutorial Round Strategy (v2 — platform-corrected)
+=====================================================================
 Products: EMERALDS (stationary @ 10,000) and TOMATOES (random walk with drift)
 
-v2 → v3 change:
-  Position-adjusted passive sizing for TOMATOES only. When heavily
-  positioned, reduce size on the adding side to limit worst-case
-  inventory build-up during one-directional taker streaks. Prices
-  stay the same (preserving edge per fill).
+Key insight: On the real platform, passive orders at the same price as
+existing bot orders never fill (bots have time priority). We must quote
+INSIDE the existing spread to get price priority.
 
-  EMERALDS unchanged from v2 — stationary product, no position risk.
+EMERALDS: Post tight quotes inside the 9992/10008 spread. Fair = 10,000.
+          Bots see our better prices and trade against us.
 
-Core approach: quote 1 tick inside existing best bid/ask for price
-priority over deep-liquidity makers.
+TOMATOES: Adaptive market-making. Post quotes strictly inside the current
+          best bid/ask to guarantee price priority over deep-liquidity makers.
 """
 
 from datamodel import OrderDepth, TradingState, Order
@@ -28,7 +27,7 @@ class Trader:
     EMERALDS_FAIR = 10_000
 
     # ── TOMATOES ─────────────────────────────────────────────────────
-    TOMATOES_EMA_ALPHA = 0.6
+    TOMATOES_EMA_ALPHA = 0.5       # fast-tracking EMA
 
     def bid(self):
         return 15
@@ -69,7 +68,7 @@ class Trader:
         best_bid = max(od.buy_orders.keys()) if od.buy_orders else None
         best_ask = min(od.sell_orders.keys()) if od.sell_orders else None
 
-        # Phase 1: Take any order priced strictly better than fair
+        # Phase 1: Take any order priced better than fair
         if od.sell_orders:
             for ask_price in sorted(od.sell_orders.keys()):
                 if ask_price >= fair:
@@ -147,7 +146,7 @@ class Trader:
         ts[ema_key] = ema
         fair = ema
 
-        # Phase 1: Take mispriced orders (strictly better than fair)
+        # Phase 1: Take mispriced orders
         for ask_price in sorted(od.sell_orders.keys()):
             if ask_price >= fair:
                 break
@@ -181,16 +180,9 @@ class Trader:
         buy_room = limit - pos
         sell_room = limit + pos
 
-        # Position-adjusted sizing: gentle reduction on the
-        # position-adding side to limit inventory build-up
-        base = 20
-        frac = pos / limit if limit > 0 else 0
-        bid_size = max(1, int(base * (1 - 0.5 * frac)))
-        ask_size = max(1, int(base * (1 + 0.5 * frac)))
-
         if buy_room > 0 and our_bid < our_ask:
-            orders.append(Order(product, our_bid, min(bid_size, buy_room)))
+            orders.append(Order(product, our_bid, min(20, buy_room)))
         if sell_room > 0 and our_ask > our_bid:
-            orders.append(Order(product, our_ask, -min(ask_size, sell_room)))
+            orders.append(Order(product, our_ask, -min(20, sell_room)))
 
         return orders, ts
