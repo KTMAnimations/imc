@@ -1,0 +1,62 @@
+[
+  {
+    "script": "baseline_42769.py",
+    "d2": 15168,
+    "d1": 15717,
+    "total": 30884,
+    "em_d2": 7182,
+    "tom_d2": 7986,
+    "em_d1": 7763,
+    "tom_d1": 7954
+  },
+  {
+    "script": "candidate_aggressive.py",
+    "d2": 15929,
+    "d1": 15367,
+    "total": 31296,
+    "em_d2": 7182,
+    "tom_d2": 8747,
+    "em_d1": 7763,
+    "tom_d1": 7604
+  },
+  {
+    "script": "candidate_balanced.py",
+    "d2": 15929,
+    "d1": 15367,
+    "total": 31296,
+    "em_d2": 7182,
+    "tom_d2": 8747,
+    "em_d1": 7763,
+    "tom_d1": 7604
+  },
+  {
+    "script": "candidate_balanced_l1.py",
+    "d2": 15394,
+    "d1": 15846,
+    "total": 31240,
+    "em_d2": 7182,
+    "tom_d2": 8212,
+    "em_d1": 7763,
+    "tom_d1": 8083
+  },
+  {
+    "script": "candidate_conservative.py",
+    "d2": 15265,
+    "d1": 15959,
+    "total": 31224,
+    "em_d2": 7182,
+    "tom_d2": 8083,
+    "em_d1": 7763,
+    "tom_d1": 8196
+  },
+  {
+    "script": "original_43794.py",
+    "d2": 15400,
+    "d1": 15704,
+    "total": 31104,
+    "em_d2": 7182,
+    "tom_d2": 8218,
+    "em_d1": 7763,
+    "tom_d1": 7941
+  }
+]
