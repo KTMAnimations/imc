@@ -116,3 +116,61 @@ All submissions face the SAME scoring day. Scoring fair values: EM=10000, TOM=49
 - EMERALDS PnL is fixed at 1050 across ALL strategy variants (same fills)
 - ALL profit differences come from TOMATOES
 - Ending position × scoring fair is the main source of variance
+
+---
+
+## Exhaustive Parameter Sweep (62 configurations tested)
+
+### Top 15 Results
+
+| # | Config | Day -2 | Day -1 | Total | vs Base |
+|---|--------|--------|--------|-------|---------|
+| 1 | **skew=0.07 + round bounds** | 15,870 | 15,487 | **31,357** | **+473** |
+| 2 | skew=0.07 / cap=30 | 15,929 | 15,367 | 31,296 | +412 |
+| 3 | skew=0.07 | 15,916 | 15,367 | 31,283 | +399 |
+| 4 | skew=0.08 | 15,916 | 15,367 | 31,283 | +399 |
+| 5 | round bounds only | 15,487 | 15,755 | 31,242 | +358 |
+| 6 | skew=0.06 + L1 imbalance | 15,394 | 15,846 | 31,240 | +356 |
+| 7 | skew=0.06 | 15,485 | 15,749 | 31,234 | +350 |
+| 8 | cap=25 | 15,265 | 15,959 | 31,224 | +340 |
+| 9 | skew=0.06 + round bounds | 15,451 | 15,761 | 31,212 | +328 |
+| 10 | skew=0.03 | 15,380 | 15,786 | 31,166 | +282 |
+| 11 | no price priority check | 15,375 | 15,736 | 31,111 | +227 |
+| 12 | skew=0.06 + VWAP mid | 15,266 | 15,840 | 31,106 | +222 |
+| 13 | original 43794 | 15,400 | 15,704 | 31,104 | +220 |
+| 14 | VWAP mid only | 15,238 | 15,798 | 31,036 | +152 |
+| 15 | skew=0.06 / alpha=0.4 | 15,584 | 15,453 | 31,036 | +152 |
+
+### Parameter Sensitivity
+
+**INV_SKEW** (most impactful, cap=20):
+- 0.00: 30,652 | 0.03: 31,166 | 0.05: 30,884 | 0.06: 31,234 | **0.07: 31,283** | 0.08: 31,283 | 0.10: 29,859
+- Sweet spot: 0.06–0.08. Falls off sharply at 0.10+.
+
+**PASSIVE_CAP** (moderate impact, skew=0.05):
+- 10: 30,450 | 15: 30,533 | 20: 30,884 | **25: 31,224** | 30: 30,950 | 80: 30,758
+- Sweet spot: 20–25. Diminishing returns above 30.
+
+**EMA_ALPHA** (low impact at skew=0.05):
+- 0.2: 30,758 | 0.3: 30,505 | 0.4: 30,505 | **0.5: 30,884** | 0.6: 30,573 | 0.8: 30,296
+- 0.5 is optimal. Deviations hurt.
+
+**Bounds method**:
+- ceil/floor: 30,884 | **round: 31,242** (+358)
+- round bounds ensure minimum ~0.5 tick edge. ceil/floor allows near-zero edge fills.
+
+### Features That Help
+- **round bounds (+358)**: Prevents thin-edge adverse passive fills
+- **INV_SKEW 0.07 (+399)**: More aggressive unwinding
+- **Combined (+473)**: Best of both
+
+### Features That Hurt
+- **EMA clearing (-518)**: Clearing at raw EMA is worse than inv-adjusted
+- **No clearing (crash)**: Clearing is structurally required
+- **INV_SKEW > 0.08**: Over-rotation, kills PnL
+- **High PASSIVE_CAP (60-80)**: More exposure without more fills
+
+### New Top Candidate: candidate_top.py
+- INV_SKEW = 0.07, round bounds (round(fair) ± 1 instead of ceil/floor)
+- Backtest total: 31,357 (+473 vs baseline)
+- Most improved Day-2 TOMATOES: 8,688 (vs 7,986 baseline)
