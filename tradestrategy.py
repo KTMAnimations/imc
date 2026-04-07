@@ -12,7 +12,7 @@ EMERALDS_HARD_LIMIT = 60
 
 TOMATOES_LIMIT = 80
 TOMATOES_EMA_ALPHA = 0.5
-TOMATOES_INV_SKEW = 0.05
+TOMATOES_INV_SKEW = 0.07
 TOMATOES_PASSIVE_CAP = 20
 
 
@@ -112,7 +112,7 @@ class Trader:
 
         # Wall mid: deepest liquidity on each side
         bid_wall = max(od.buy_orders.keys(), key=lambda p: od.buy_orders[p])
-        ask_wall = min(od.sell_orders.keys(), key=lambda p: -od.sell_orders[p])
+        ask_wall = max(od.sell_orders.keys(), key=lambda p: -od.sell_orders[p])
         wall_mid = (bid_wall + ask_wall) / 2
 
         alpha = TOMATOES_EMA_ALPHA
@@ -188,9 +188,10 @@ class Trader:
         if best_bid is None or best_ask is None:
             return orders
 
-        # Strictly profitable bounds
-        max_bid = math.ceil(fair) - 1
-        min_ask = math.floor(fair) + 1
+        # Round bounds: ensures minimum ~0.5 tick edge on each side
+        fair_rounded = round(fair)
+        max_bid = fair_rounded - 1
+        min_ask = fair_rounded + 1
 
         # Penny-jump: post 1 tick inside existing spread
         our_bid = min(best_bid + 1, max_bid)
