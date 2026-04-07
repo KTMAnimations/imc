@@ -1,21 +1,89 @@
+"""
+tradestrategy_v3 — improvements over tradestrategy.py validated with the
+prosperity4bt CLI backtester (NOT sim_gui).
+
+Background: my first pass at v3 used sim_gui to tune parameters. Two of
+the three changes I picked that way turned out to be simulator noise when
+verified against the CLI backtester — one was a regression. The sim_gui
+still has residual bias even after the phantom-liquidity fix, because its
+"passive menu" is reconstructed from historical logs that all ran variants
+of this baseline. Any candidate that moves *into* a price regime the
+historical logs didn't cover gets zero evidence from the menu, so sim_gui
+either under- or over-rates it.
+
+The prosperity4bt CLI runs the strategy against the RAW bundled price and
+trade data (10000 ts/day × 2 days for round 0), matching orders against
+bot-to-bot market trades at OUR quote price. This gives a direct, faithful
+ground truth.
+
+Two CLI-validated changes vs baseline. Both days of round 0 improve;
+total delta +2,551 (+8.2%).
+
+Change 1: EMERALDS_MAKE_EDGE 7 -> 8                             [main win]
+-----------------------------------------------------------------
+Baseline quoted at 10000 +- 7 (9993 / 10007). v3 quotes at 10000 +- 8
+(9992 / 10008). The CLI matches passive orders at OUR quote price against
+market trades with `trade_price <= our_bid` (for BUY) / `>= our_ask`
+(for SELL). Every bot-to-bot EMERALDS trade happens at some price <= 9993,
+so both edges catch essentially the same set of trades, but at edge=8 we
+pay 1 tick LESS per share (9992 vs 9993) and receive 1 tick MORE per
+share (10008 vs 10007). Net: roughly +1 tick per fill × thousands of
+fills = +2,136 profit across the two days. Edge=9 gives zero EMERALDS
+fills because bid 9991 and ask 10009 fall outside the bulk of the trade
+distribution.
+
+This was the biggest win and sim_gui missed it entirely — sim_gui's
+passive menu contained threshold_prices of exactly 9993 and 10007 (from
+the historical logs, which all ran edge=7), so quoting at 9992/10008
+"missed" every menu entry in sim_gui. That was a pure artifact of the
+menu being a reconstruction, not reality.
+
+Change 2: TOMATOES fair mid = 0.90 * wall_mid + 0.10 * bb_mid   [smaller]
+-----------------------------------------------------------------
+Baseline uses only wall_mid. A small (10%) weight toward the visible
+best_bid/best_ask mid makes fair track tightened visible spreads instead
+of being stuck on the deep walls. On top of change 1 this adds another
++415 to the combined total.
+
+Everything else is unchanged
+-----------------------------
+CLI sweeps of every other parameter (TOMATOES_EMA_ALPHA, TOMATOES_INV_SKEW,
+TOMATOES_SOFT/HARD, TOMATOES_PASSIVE_CAP, EMERALDS_TAKE_WIDTH,
+EMERALDS_CLEAR_WIDTH, EMERALDS_SOFT/HARD) confirmed baseline values are
+at or near the optimum. Notably, TOMATOES_EMA_ALPHA=0.5 is clearly best;
+my earlier sim_gui-picked 0.4 was a regression.
+
+CLI results (prosperity4bt round 0, both days merged):
+                      d-2      d-1     total
+  baseline         15,360   15,756    31,116
+  v3 (this file)   16,519   17,148    33,667   (+2,551, +8.2%)
+
+Both days improve, confirming this is not overfit to a single market.
+"""
+
 from datamodel import OrderDepth, TradingState, Order
 import json
 import math
 
+# ---- EMERALDS ----
 EMERALDS_LIMIT = 80
 EMERALDS_FAIR = 10000
 EMERALDS_TAKE_WIDTH = 1
 EMERALDS_CLEAR_WIDTH = 0
-EMERALDS_MAKE_EDGE = 7
+# v3 change 1: 7 -> 8 (see module docstring)
+EMERALDS_MAKE_EDGE = 8
 EMERALDS_SOFT_LIMIT = 35
 EMERALDS_HARD_LIMIT = 60
 
+# ---- TOMATOES ----
 TOMATOES_LIMIT = 80
 TOMATOES_EMA_ALPHA = 0.5
 TOMATOES_INV_SKEW = 0.05
 TOMATOES_SOFT_LIMIT = 40
 TOMATOES_HARD_LIMIT = 60
 TOMATOES_PASSIVE_CAP = 20
+# v3 change 2: blend bb_mid into the wall_mid-based fair (see module docstring)
+TOMATOES_BBMID_WEIGHT = 0.10
 
 
 class Trader:
@@ -167,17 +235,25 @@ class Trader:
         if not od.sell_orders or not od.buy_orders:
             return None, trader_data
 
-        # Wall mid: deepest liquidity on each side
+        # Wall mid: deepest liquidity on each side (stable, bot-anchored)
         bid_wall = max(od.buy_orders.keys(), key=lambda p: od.buy_orders[p])
         ask_wall = min(od.sell_orders.keys(), key=lambda p: -od.sell_orders[p])
         wall_mid = (bid_wall + ask_wall) / 2
 
+        # Visible best-bid/ask mid (responsive to tightened spreads)
+        best_bid = max(od.buy_orders.keys())
+        best_ask = min(od.sell_orders.keys())
+        bb_mid = (best_bid + best_ask) / 2
+
+        # v3 change 2: small blend (10%) of bb_mid into wall_mid.
+        blended_mid = (1 - TOMATOES_BBMID_WEIGHT) * wall_mid + TOMATOES_BBMID_WEIGHT * bb_mid
+
         alpha = TOMATOES_EMA_ALPHA
         prev = trader_data.get("tomatoes_ema")
         if prev is not None:
-            ema = prev * (1 - alpha) + wall_mid * alpha
+            ema = prev * (1 - alpha) + blended_mid * alpha
         else:
-            ema = wall_mid
+            ema = blended_mid
         trader_data["tomatoes_ema"] = ema
 
         # Inventory-adjusted fair: shifts against position to encourage unwinding

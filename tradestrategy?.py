@@ -12,68 +12,11 @@ EMERALDS_HARD_LIMIT = 60
 
 TOMATOES_LIMIT = 80
 TOMATOES_EMA_ALPHA = 0.5
-TOMATOES_INV_SKEW = 0.05
-TOMATOES_SOFT_LIMIT = 40
-TOMATOES_HARD_LIMIT = 60
+TOMATOES_INV_SKEW = 0.07
 TOMATOES_PASSIVE_CAP = 20
 
 
 class Trader:
-
-    def tomatoes_clear_price(self, fair, net):
-        if net >= TOMATOES_HARD_LIMIT:
-            return math.floor(fair) - 1
-        if net >= TOMATOES_SOFT_LIMIT:
-            return math.floor(fair)
-        if net <= -TOMATOES_HARD_LIMIT:
-            return math.ceil(fair) + 1
-        if net <= -TOMATOES_SOFT_LIMIT:
-            return math.ceil(fair)
-        return round(fair)
-
-    def tomatoes_quote_prices(self, od, fair, eff_pos):
-        best_bid = max(od.buy_orders.keys()) if od.buy_orders else None
-        best_ask = min(od.sell_orders.keys()) if od.sell_orders else None
-
-        if best_bid is None or best_ask is None:
-            return None, None
-
-        max_bid = math.ceil(fair) - 1
-        min_ask = math.floor(fair) + 1
-
-        if eff_pos <= -TOMATOES_SOFT_LIMIT:
-            max_bid += 1
-        if eff_pos <= -TOMATOES_HARD_LIMIT:
-            max_bid += 1
-        if eff_pos >= TOMATOES_SOFT_LIMIT:
-            min_ask -= 1
-        if eff_pos >= TOMATOES_HARD_LIMIT:
-            min_ask -= 1
-
-        bid_ceiling = min(max_bid, best_ask - 1)
-        ask_floor = max(min_ask, best_bid + 1)
-
-        if bid_ceiling <= best_bid or ask_floor >= best_ask:
-            return None, None
-
-        normal_bid = min(best_bid + 1, bid_ceiling)
-        normal_ask = max(best_ask - 1, ask_floor)
-
-        if eff_pos <= -TOMATOES_HARD_LIMIT:
-            bid = bid_ceiling
-        elif eff_pos <= -TOMATOES_SOFT_LIMIT:
-            bid = min(bid_ceiling, normal_bid + 1)
-        else:
-            bid = normal_bid
-
-        if eff_pos >= TOMATOES_HARD_LIMIT:
-            ask = ask_floor
-        elif eff_pos >= TOMATOES_SOFT_LIMIT:
-            ask = max(ask_floor, normal_ask - 1)
-        else:
-            ask = normal_ask
-
-        return bid, ask
 
     # ---- EMERALDS ----
 
@@ -169,7 +112,7 @@ class Trader:
 
         # Wall mid: deepest liquidity on each side
         bid_wall = max(od.buy_orders.keys(), key=lambda p: od.buy_orders[p])
-        ask_wall = min(od.sell_orders.keys(), key=lambda p: -od.sell_orders[p])
+        ask_wall = max(od.sell_orders.keys(), key=lambda p: -od.sell_orders[p])
         wall_mid = (bid_wall + ask_wall) / 2
 
         alpha = TOMATOES_EMA_ALPHA
@@ -219,7 +162,7 @@ class Trader:
         net = pos + bv - sv
 
         if net > 0:
-            price = self.tomatoes_clear_price(fair, net)
+            price = round(fair)
             avail = sum(v for p, v in od.buy_orders.items() if p >= price)
             qty = min(avail, net, TOMATOES_LIMIT + pos - sv)
             if qty > 0:
@@ -227,7 +170,7 @@ class Trader:
                 sv += qty
 
         elif net < 0:
-            price = self.tomatoes_clear_price(fair, net)
+            price = round(fair)
             avail = sum(-v for p, v in od.sell_orders.items() if p <= price)
             qty = min(avail, -net, TOMATOES_LIMIT - pos - bv)
             if qty > 0:
@@ -239,12 +182,23 @@ class Trader:
     def tomatoes_make(self, od, fair, pos, bv, sv):
         orders = []
 
-        eff_pos = pos + bv - sv
-        bid, ask = self.tomatoes_quote_prices(od, fair, eff_pos)
-        if bid is None or ask is None:
+        best_bid = max(od.buy_orders.keys()) if od.buy_orders else None
+        best_ask = min(od.sell_orders.keys()) if od.sell_orders else None
+
+        if best_bid is None or best_ask is None:
             return orders
 
+        # Round bounds: ensures minimum ~0.5 tick edge on each side
+        fair_rounded = round(fair)
+        max_bid = fair_rounded - 1
+        min_ask = fair_rounded + 1
+
+        # Penny-jump: post 1 tick inside existing spread
+        our_bid = min(best_bid + 1, max_bid)
+        our_ask = max(best_ask - 1, min_ask)
+
         # Inventory-aware sizing: scale down the side that builds inventory
+        eff_pos = pos + bv - sv
         half = TOMATOES_LIMIT // 2
         base = TOMATOES_PASSIVE_CAP
 
@@ -265,10 +219,11 @@ class Trader:
         buy_qty = min(bid_cap, TOMATOES_LIMIT - pos - bv)
         sell_qty = min(ask_cap, TOMATOES_LIMIT + pos - sv)
 
-        if buy_qty > 0:
-            orders.append(Order("TOMATOES", bid, buy_qty))
-        if sell_qty > 0:
-            orders.append(Order("TOMATOES", ask, -sell_qty))
+        # Only post if we have price priority (strictly inside spread)
+        if buy_qty > 0 and our_bid > best_bid:
+            orders.append(Order("TOMATOES", our_bid, buy_qty))
+        if sell_qty > 0 and our_ask < best_ask:
+            orders.append(Order("TOMATOES", our_ask, -sell_qty))
 
         return orders
 
