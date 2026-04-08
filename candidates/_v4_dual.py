@@ -5,7 +5,6 @@ sim_gui and prosperity4bt and reports both totals plus deltas vs baseline.
 Hard requirement for v4: BOTH must improve over baseline.
 
 Baseline reference (verified):
-  sim_gui average over 17 logs: 2457.735294...
   sim_gui aggregated 17 logs: 2715.50
   CLI prosperity4bt round 0:  31,116
 """
@@ -31,21 +30,11 @@ LOG_PATHS = [os.path.join(REPO, d, f'{d}.log') for d in LOG_DIR_NAMES]
 
 # Cache the aggregated timeline (deterministic, only built once)
 _AGG_TL = None
-_PER_LOG_TLS = None
-
-
 def _agg_tl():
     global _AGG_TL
     if _AGG_TL is None:
         _AGG_TL = build_timeline(LOG_PATHS)
     return _AGG_TL
-
-
-def _per_log_tls():
-    global _PER_LOG_TLS
-    if _PER_LOG_TLS is None:
-        _PER_LOG_TLS = [build_timeline([path]) for path in LOG_PATHS]
-    return _PER_LOG_TLS
 
 
 # Default param values matching baseline (must match _v4_template.py defaults)
@@ -91,12 +80,10 @@ def write_candidate(params, dst_path):
 
 
 def run_simgui(strategy_path):
-    """Return mean total profit over individual log runs."""
-    vals = []
-    for tl in _per_log_tls():
-        trader = load_trader_from_file(strategy_path)
-        vals.append(simulate(trader, tl).total_pnl)
-    return sum(vals) / len(vals)
+    """Return aggregated total profit on the 17-log timeline."""
+    trader = load_trader_from_file(strategy_path)
+    res = simulate(trader, _agg_tl())
+    return res.total_pnl
 
 
 def run_cli(strategy_path):
@@ -175,7 +162,7 @@ def fmt_file(label, path):
 
 
 # Baseline reference values (verified manually)
-BASELINE_SIM = 2457.735294117647
+BASELINE_SIM = 2715.50
 BASELINE_CLI = 31116
 
 

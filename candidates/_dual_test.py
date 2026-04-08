@@ -2,19 +2,17 @@
 Score any strategy file in BOTH backtesters.
 
 Usage:
-    python -m candidates._dual_test [--sim-mode average|aggregate] <path/to/strategy.py> [<path>...]
+    python -m candidates._dual_test <path/to/strategy.py> [<path>...]
 
 Strategy files don't need to live at repo root — this script copies them
 to a tmp file at repo root (for `from datamodel import ...`), runs both
 backtesters, then cleans up.
 
 Reference baseline numbers (verified):
-    sim_gui average over 17 logs: 2457.735294...
-    sim_gui aggregated 17 logs:   2715.5
+    sim_gui aggregated 17 logs:  2715.5
     CLI prosperity4bt round 0:   31116
 """
 
-import argparse
 import os
 import re
 import shutil
@@ -33,9 +31,6 @@ LOG_DIR_NAMES = ['41408','41446','41499','41588','41641','42308','42752','42769'
 LOG_PATHS = [os.path.join(REPO, d, f'{d}.log') for d in LOG_DIR_NAMES]
 
 _AGG_TL = None
-_PER_LOG_TLS = None
-
-
 def _agg_tl():
     global _AGG_TL
     if _AGG_TL is None:
@@ -43,24 +38,10 @@ def _agg_tl():
     return _AGG_TL
 
 
-def _per_log_tls():
-    global _PER_LOG_TLS
-    if _PER_LOG_TLS is None:
-        _PER_LOG_TLS = [build_timeline([path]) for path in LOG_PATHS]
-    return _PER_LOG_TLS
-
-
-def run_simgui(strategy_path, mode="average"):
-    if mode == "aggregate":
-        trader = load_trader_from_file(strategy_path)
-        return simulate(trader, _agg_tl()).total_pnl
-    if mode == "average":
-        vals = []
-        for tl in _per_log_tls():
-            trader = load_trader_from_file(strategy_path)
-            vals.append(simulate(trader, tl).total_pnl)
-        return sum(vals) / len(vals)
-    raise ValueError(f"unsupported sim mode: {mode}")
+def run_simgui(strategy_path):
+    trader = load_trader_from_file(strategy_path)
+    res = simulate(trader, _agg_tl())
+    return res.total_pnl
 
 
 def run_cli(strategy_path):
@@ -75,7 +56,7 @@ def run_cli(strategy_path):
     return int(matches[-1].replace(",", ""))
 
 
-def score_file(path, sim_mode="average"):
+def score_file(path):
     """Run a strategy file through both backtesters. Returns (sim, cli)."""
     abspath = os.path.abspath(path)
     if not os.path.isfile(abspath):
@@ -84,7 +65,7 @@ def score_file(path, sim_mode="average"):
     tmp_path = os.path.join(REPO, "_dt_candidate.py")
     shutil.copyfile(abspath, tmp_path)
     try:
-        sim = run_simgui(tmp_path, mode=sim_mode)
+        sim = run_simgui(tmp_path)
         cli = run_cli(tmp_path)
     finally:
         if os.path.exists(tmp_path):
@@ -100,29 +81,20 @@ def score_file(path, sim_mode="average"):
     return sim, cli
 
 
-BASELINE_SIM_AVERAGE = 2457.735294117647
-BASELINE_SIM_AGGREGATE = 2715.50
+BASELINE_SIM = 2715.50
 BASELINE_CLI = 31116
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Score strategy files in the local dual backtest harness.")
-    ap.add_argument(
-        "--sim-mode",
-        choices=["average", "aggregate"],
-        default="average",
-        help="Use the mean of per-log sim_gui runs, or the legacy merged-log aggregate run.",
-    )
-    ap.add_argument("paths", nargs="+", help="Strategy file(s) to score.")
-    args = ap.parse_args()
-
-    baseline_sim = BASELINE_SIM_AVERAGE if args.sim_mode == "average" else BASELINE_SIM_AGGREGATE
+    if len(sys.argv) < 2:
+        print(__doc__)
+        sys.exit(1)
     print(f"{'name':<35s} {'sim':>8} {'sim_d':>8}  {'cli':>6} {'cli_d':>7}")
     print("-" * 75)
-    for path in args.paths:
+    for path in sys.argv[1:]:
         try:
-            sim, cli = score_file(path, sim_mode=args.sim_mode)
-            ds = sim - baseline_sim
+            sim, cli = score_file(path)
+            ds = sim - BASELINE_SIM
             dc = cli - BASELINE_CLI
             name = os.path.basename(path)
             sm = "+" if ds > 0 else ("=" if ds == 0 else "-")
