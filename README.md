@@ -1,12 +1,10 @@
 # IMC Prosperity 4
 
-My code from IMC Prosperity 4, a fifteen-day algorithmic trading competition. Each round you get a couple of days of order book data for a set of fictional products, write a Python bot that quotes them, and submit once. The submission trades live against everyone else's bots, and that result is your score for the round.
+My code from IMC Prosperity 4, a fifteen-day algorithmic trading competition. Each round you get a couple of days of order book data for some fictional products, write a Python bot that quotes them, and submit once. It trades live against everyone else's bots, and that result is your score.
 
-I'm Roy Vaid. I went in because I wanted to actually trade something, and the part that kept nagging me was how little data you submit against. A strategy that looked clean on the two sample days would still lose when it ran live. One backtest number told me almost nothing about whether it was good or just lucky on those particular days.
+What kept nagging me was how little data you submit against. A strategy that looked clean on the two sample days would still lose when it ran live, and one backtest number told me nothing about whether it was good or just lucky.
 
-Most of what's here is market making: quote both sides around an estimate of fair value, and lean the quotes against your inventory so you aren't holding a big position when the price moves. That follows Avellaneda and Stoikov, [High-frequency trading in a limit order book](https://www.math.nyu.edu/~avellane/HighFrequencyTrading.pdf) (2008), which gives you a reservation price and a spread as a function of inventory and risk aversion.
-
-To get past the single-number problem I used a Monte Carlo backtester (embedded under `imc-prosperity-4/`) that rebuilds a round from the order book statistics and replays the trader across thousands of simulated days. Instead of one PnL you get a distribution, which is what I actually wanted to look at.
+Most of what's here is market making: quote both sides around an estimate of fair value and lean the quotes against your inventory so you aren't caught long or short when the price moves. That follows Avellaneda and Stoikov, [High-frequency trading in a limit order book](https://www.math.nyu.edu/~avellane/HighFrequencyTrading.pdf) (2008). To get past the single-number problem I used a Monte Carlo backtester (embedded under `imc-prosperity-4/`) that rebuilds a round from the order book statistics and replays the trader across thousands of simulated days, so you get a distribution instead of one PnL.
 
 ## Figures
 
