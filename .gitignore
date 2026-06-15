@@ -1,3 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Playwright cache
+.playwright-mcp/
+
 # macOS
 .DS_Store
 .AppleDouble
